@@ -25,7 +25,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.10.0"
+    "@actions/core": "^1.10.0",
+    "axe-core": "^4.6.3",
+    "jsdom": "^21.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
