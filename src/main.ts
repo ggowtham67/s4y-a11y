@@ -12,7 +12,7 @@ async function run(): Promise<void> {
     const octokit = github.getOctokit(token)
 
     // Debug log the payload.
-    core.info(`Payload keys: ${Object.keys(github.context.payload)}`)
+    core.info(`Payload ${github.context.payload}`)
 
     // Get event name.
     const eventName = github.context.eventName
