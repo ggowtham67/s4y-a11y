@@ -103,7 +103,7 @@ function run() {
                     owner: github.context.repo.owner,
                     repo: github.context.repo.repo,
                     path: filename,
-                    ref: file.sha
+                    ref: base
                 });
                 // eslint-disable-next-line no-console
                 console.log(filename);
