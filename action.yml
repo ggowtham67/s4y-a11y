@@ -1,8 +1,8 @@
-name: 'Your name here'
+name: 's4y-a11y'
 description: 'Provide a description here'
-author: 'Your name or organization here'
+author: 'Gowtham G'
 inputs:
-  token: # change this
+  GITHUB_TOKEN: # change this
     required: true
     description: 'Access token'
 runs:

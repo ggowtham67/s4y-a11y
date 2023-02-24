@@ -1,4 +1,4 @@
-import axe, {Spec, RunCallback} from 'axe-core'
+import axe, {Spec} from 'axe-core'
 
 const getAxeConfig = (): Spec => {
   return {

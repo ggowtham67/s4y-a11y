@@ -7,14 +7,12 @@ import {getDOM} from './dom'
 async function run(): Promise<void> {
   try {
     // Create GitHub client with the API token.
-    const token = core.getInput('token', {
-      required: true
-    })
+    const token = core.getInput('GITHUB_TOKEN', {required: true})
 
     const octokit = github.getOctokit(token)
 
     // Debug log the payload.
-    core.debug(`Payload keys: ${Object.keys(github.context.payload)}`)
+    core.info(`Payload keys: ${Object.keys(github.context.payload)}`)
 
     // Get event name.
     const eventName = github.context.eventName
@@ -118,8 +116,8 @@ async function run(): Promise<void> {
           v.description,
           v.help,
           v.helpUrl,
-          v.tags.join('  '),
-          v.nodes.map(n => n.element?.outerHTML).join('  ')
+          v.tags.join(','),
+          v.nodes.map(n => n.element?.outerHTML).join(',')
         ]
       })
 
