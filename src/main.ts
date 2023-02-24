@@ -101,7 +101,18 @@ async function run(): Promise<void> {
       const dom = getDOM(contents)
 
       // validate
-      validate(dom.document.body)
+      validate(dom.document.body, function (error, results) {
+        if (error != null) {
+          core.error(`Error while validating ${filename}, error: ${error}`)
+          return
+        }
+
+        for (const violation of results.violations) {
+          core.info(
+            `${violation.impact} violation found: ${violation.description}`
+          )
+        }
+      })
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(`Error thrown: ${error.message}`)

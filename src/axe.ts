@@ -1,4 +1,4 @@
-import axe, {Spec} from 'axe-core'
+import axe, {Spec, RunCallback} from 'axe-core'
 
 const getAxeConfig = (): Spec => {
   return {
@@ -11,14 +11,9 @@ const getAxeConfig = (): Spec => {
   }
 }
 
-const validate = (dom: Node): void => {
+const validate = (dom: Node, cb: RunCallback): void => {
   axe.configure(getAxeConfig())
-  axe.run(dom, function (err, results) {
-    // eslint-disable-next-line no-console
-    console.error('error', err)
-    // eslint-disable-next-line no-console
-    console.log('result', results)
-  })
+  axe.run(dom, cb)
 }
 
 export default validate
