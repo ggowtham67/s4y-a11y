@@ -77,77 +77,21 @@ async function run(): Promise<void> {
 
     // Get the changed files from the response payload.
     const files = response.data.files ?? []
-    const all = [] as string[]
-    const added = [] as string[]
-    const modified = [] as string[]
-    const removed = [] as string[]
-    const renamed = [] as string[]
-    const addedModified = [] as string[]
 
     for (const file of files) {
       const filename = file.filename
 
-      const requestOptions = octokit.rest.repos.getContent.endpoint({
+      const result = await octokit.rest.repos.getContent({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
-        path: file.contents_url,
-        mediaType: {
-          format: 'raw'
-        }
+        path: filename,
+        ref: file.sha
       })
-
-      const result = await octokit.request(requestOptions)
 
       // eslint-disable-next-line no-console
       console.log(filename)
       // eslint-disable-next-line no-console
       console.log(result)
-
-      all.push(filename)
-
-      switch (file.status as FileStatus) {
-        case 'added':
-          added.push(filename)
-          addedModified.push(filename)
-          break
-        case 'modified':
-          modified.push(filename)
-          addedModified.push(filename)
-          break
-        case 'removed':
-          removed.push(filename)
-          break
-        case 'renamed':
-          renamed.push(filename)
-          break
-        default:
-          core.setFailed(
-            `One of your files includes an unsupported file status '${file.status}', expected 'added', 'modified', 'removed', or 'renamed'.`
-          )
-      }
-
-      const allFormatted = all.join(' ')
-      const addedFormatted = added.join(' ')
-      const modifiedFormatted = modified.join(' ')
-      const removedFormatted = removed.join(' ')
-      const renamedFormatted = renamed.join(' ')
-      const addedModifiedFormatted = addedModified.join(' ')
-
-      // Log the output values.
-      core.info(`All: ${allFormatted}`)
-      core.info(`Added: ${addedFormatted}`)
-      core.info(`Modified: ${modifiedFormatted}`)
-      core.info(`Removed: ${removedFormatted}`)
-      core.info(`Renamed: ${renamedFormatted}`)
-      core.info(`Added or modified: ${addedModifiedFormatted}`)
-
-      // Set step output context.
-      core.setOutput('all', allFormatted)
-      core.setOutput('added', addedFormatted)
-      core.setOutput('modified', modifiedFormatted)
-      core.setOutput('removed', removedFormatted)
-      core.setOutput('renamed', renamedFormatted)
-      core.setOutput('added_modified', addedModifiedFormatted)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
