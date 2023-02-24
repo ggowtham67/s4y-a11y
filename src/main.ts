@@ -91,7 +91,7 @@ async function run(): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // eslint-disable-next-line no-console
-      console.log(Buffer.from(result.data.content, 'base64'))
+      console.log(Buffer.from(result.data.content, 'base64').toString())
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
