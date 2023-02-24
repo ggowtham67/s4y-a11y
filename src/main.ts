@@ -137,8 +137,8 @@ async function run(): Promise<void> {
       })
     }
 
-    core.debug(`output length: ${output.length.toString()}`)
-    core.debug(`output text: ${output.join(',')}`)
+    core.info(`output length: ${output.length.toString()}`)
+    core.info(`output text: ${output.join(',')}`)
 
     if (output.length < 1) {
       core.info('No files to process')
