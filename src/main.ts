@@ -76,7 +76,7 @@ async function run(): Promise<void> {
     }
 
     // Get the changed files from the response payload.
-    const files = response.data.files
+    const files = response.data.files ?? []
     const all = [] as string[]
     const added = [] as string[]
     const modified = [] as string[]
@@ -84,30 +84,37 @@ async function run(): Promise<void> {
     const renamed = [] as string[]
     const addedModified = [] as string[]
 
-    if (files) {
-      for (const file of files) {
-        const filename = file.filename
-        all.push(filename)
-        switch (file.status as FileStatus) {
-          case 'added':
-            added.push(filename)
-            addedModified.push(filename)
-            break
-          case 'modified':
-            modified.push(filename)
-            addedModified.push(filename)
-            break
-          case 'removed':
-            removed.push(filename)
-            break
-          case 'renamed':
-            renamed.push(filename)
-            break
-          default:
-            core.setFailed(
-              `One of your files includes an unsupported file status '${file.status}', expected 'added', 'modified', 'removed', or 'renamed'.`
-            )
-        }
+    for (const file of files) {
+      const filename = file.filename
+      const content = await octokit.rest.repos.getContent({
+        repo: github.context.repo.repo,
+        owner: github.context.repo.owner,
+        path: file.raw_url
+      })
+
+      core.setOutput(file.filename, content.data.toString())
+
+      all.push(filename)
+
+      switch (file.status as FileStatus) {
+        case 'added':
+          added.push(filename)
+          addedModified.push(filename)
+          break
+        case 'modified':
+          modified.push(filename)
+          addedModified.push(filename)
+          break
+        case 'removed':
+          removed.push(filename)
+          break
+        case 'renamed':
+          renamed.push(filename)
+          break
+        default:
+          core.setFailed(
+            `One of your files includes an unsupported file status '${file.status}', expected 'added', 'modified', 'removed', or 'renamed'.`
+          )
       }
 
       const allFormatted = all.join(' ')
