@@ -75,15 +75,20 @@ async function run(): Promise<void> {
     }
 
     // Get the changed files from the response payload.
-    const files = response.data.files ?? []
+    // Process only the tpl files
+    const files = (response.data.files ?? []).filter(f =>
+      f.filename.endsWith('.tpl')
+    )
+
+    if (files.length < 1) {
+      core.info('Nothing to validate')
+      return
+    }
 
     let output: string[] = ['# Accessibility validation']
 
     for (const file of files) {
       const filename = file.filename
-      // Process only the tpl files
-      if (!filename.endsWith('.tpl')) continue
-
       core.info(`Processing template ${filename}`)
 
       const result = await octokit.rest.repos.getContent({
