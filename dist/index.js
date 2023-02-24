@@ -105,12 +105,6 @@ function run() {
             const addedModified = [];
             for (const file of files) {
                 const filename = file.filename;
-                const content = yield octokit.rest.repos.getContent({
-                    repo: github.context.repo.repo,
-                    owner: github.context.repo.owner,
-                    path: file.raw_url
-                });
-                core.setOutput(file.filename, content.data.toString());
                 all.push(filename);
                 switch (file.status) {
                     case 'added':
