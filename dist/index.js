@@ -108,7 +108,10 @@ function run() {
                 const result = yield octokit.rest.repos.getContent({
                     owner: github.context.repo.owner,
                     repo: github.context.repo.repo,
-                    path: filename
+                    path: file.raw_url,
+                    mediaType: {
+                        format: 'raw'
+                    }
                 });
                 // eslint-disable-next-line no-console
                 console.log(filename);
