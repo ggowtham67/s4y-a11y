@@ -41,9 +41,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const github_1 = __nccwpck_require__(5438);
 function run() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Create GitHub client with the API token.
@@ -51,36 +50,31 @@ function run() {
                 required: true
             });
             const octokit = github.getOctokit(token);
-            const format = core.getInput('format', { required: true });
-            // Ensure that the format parameter is set properly.
-            if (format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
-                core.setFailed(`Format must be one of 'string-delimited', 'csv', or 'json', got '${format}'.`);
-            }
             // Debug log the payload.
-            core.debug(`Payload keys: ${Object.keys(github_1.context.payload)}`);
+            core.debug(`Payload keys: ${Object.keys(github.context.payload)}`);
             // Get event name.
-            const eventName = github_1.context.eventName;
+            const eventName = github.context.eventName;
             // Define the base and head commits to be extracted from the payload.
             let base;
             let head;
             switch (eventName) {
                 case 'pull_request':
-                    base = (_b = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.base) === null || _b === void 0 ? void 0 : _b.sha;
-                    head = (_d = (_c = github_1.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.head) === null || _d === void 0 ? void 0 : _d.sha;
+                    base = (_b = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.base) === null || _b === void 0 ? void 0 : _b.sha;
+                    head = (_d = (_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.head) === null || _d === void 0 ? void 0 : _d.sha;
                     break;
                 case 'push':
-                    base = github_1.context.payload.before;
-                    head = github_1.context.payload.after;
+                    base = github.context.payload.before;
+                    head = github.context.payload.after;
                     break;
                 default:
-                    core.setFailed(`This action only supports pull requests and pushes, ${github_1.context.eventName} events are not supported. Please submit an issue on this action's GitHub repo if you believe this in correct.`);
+                    core.setFailed(`This action only supports pull requests and pushes, ${github.context.eventName} events are not supported. Please submit an issue on this action's GitHub repo if you believe this in correct.`);
             }
             // Log the base and head commits
             core.info(`Base commit: ${base}`);
             core.info(`Head commit: ${head}`);
             // Ensure that the base and head properties are set on the payload.
             if (!(base && head)) {
-                core.setFailed(`The base and head commits are missing from the payload for this ${github_1.context.eventName} event. Please submit an issue on this action's GitHub repo.`);
+                core.setFailed(`The base and head commits are missing from the payload for this ${github.context.eventName} event. Please submit an issue on this action's GitHub repo.`);
                 // To satisfy TypeScript, even though this is unreachable.
                 base = '';
                 head = '';
@@ -90,91 +84,58 @@ function run() {
             const response = yield octokit.rest.repos.compareCommits({
                 base,
                 head,
-                owner: github_1.context.repo.owner,
-                repo: github_1.context.repo.repo
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo
             });
             // Ensure that the request was successful.
             if (response.status !== 200) {
-                core.setFailed(`The GitHub API for comparing the base and head commits for this ${github_1.context.eventName} event returned ${response.status}, expected 200. Please submit an issue on this action's GitHub repo.`);
+                core.setFailed(`The GitHub API for comparing the base and head commits for this ${github.context.eventName} event returned ${response.status}, expected 200. Please submit an issue on this action's GitHub repo.`);
             }
             // Ensure that the head commit is ahead of the base commit.
             if (response.data.status !== 'ahead') {
-                core.setFailed(`The head commit for this ${github_1.context.eventName} event is not ahead of the base commit. Please submit an issue on this action's GitHub repo.`);
+                core.setFailed(`The head commit for this ${github.context.eventName} event is not ahead of the base commit. Please submit an issue on this action's GitHub repo.`);
             }
             // Get the changed files from the response payload.
-            const files = response.data.files;
+            const files = (_e = response.data.files) !== null && _e !== void 0 ? _e : [];
             const all = [];
             const added = [];
             const modified = [];
             const removed = [];
             const renamed = [];
             const addedModified = [];
-            if (files) {
-                for (const file of files) {
-                    const filename = file.filename;
-                    // If we're using the 'space-delimited' format and any of the filenames have a space in them,
-                    // then fail the step.
-                    if (format === 'space-delimited' && filename.includes(' ')) {
-                        core.setFailed(`One of your files includes a space. Consider using a different output format or removing spaces from your filenames. Please submit an issue on this action's GitHub repo.`);
-                    }
-                    all.push(filename);
-                    switch (file.status) {
-                        case 'added':
-                            added.push(filename);
-                            addedModified.push(filename);
-                            break;
-                        case 'modified':
-                            modified.push(filename);
-                            addedModified.push(filename);
-                            break;
-                        case 'removed':
-                            removed.push(filename);
-                            break;
-                        case 'renamed':
-                            renamed.push(filename);
-                            break;
-                        default:
-                            core.setFailed(`One of your files includes an unsupported file status '${file.status}', expected 'added', 'modified', 'removed', or 'renamed'.`);
-                    }
+            for (const file of files) {
+                const filename = file.filename;
+                const content = yield octokit.rest.repos.getContent({
+                    repo: github.context.repo.repo,
+                    owner: github.context.repo.owner,
+                    path: file.raw_url
+                });
+                core.setOutput(file.filename, content.data.toString());
+                all.push(filename);
+                switch (file.status) {
+                    case 'added':
+                        added.push(filename);
+                        addedModified.push(filename);
+                        break;
+                    case 'modified':
+                        modified.push(filename);
+                        addedModified.push(filename);
+                        break;
+                    case 'removed':
+                        removed.push(filename);
+                        break;
+                    case 'renamed':
+                        renamed.push(filename);
+                        break;
+                    default:
+                        core.setFailed(`One of your files includes an unsupported file status '${file.status}', expected 'added', 'modified', 'removed', or 'renamed'.`);
                 }
-                // Format the arrays of changed files.
-                let allFormatted;
-                let addedFormatted;
-                let modifiedFormatted;
-                let removedFormatted;
-                let renamedFormatted;
-                let addedModifiedFormatted;
-                switch (format) {
-                    case 'space-delimited':
-                        // If any of the filenames have a space in them, then fail the step.
-                        for (const file of all) {
-                            if (file.includes(' '))
-                                core.setFailed('One of your files includes a space. Consider using a different output format or removing spaces from your filenames.');
-                        }
-                        allFormatted = all.join(' ');
-                        addedFormatted = added.join(' ');
-                        modifiedFormatted = modified.join(' ');
-                        removedFormatted = removed.join(' ');
-                        renamedFormatted = renamed.join(' ');
-                        addedModifiedFormatted = addedModified.join(' ');
-                        break;
-                    case 'csv':
-                        allFormatted = all.join(',');
-                        addedFormatted = added.join(',');
-                        modifiedFormatted = modified.join(',');
-                        removedFormatted = removed.join(',');
-                        renamedFormatted = renamed.join(',');
-                        addedModifiedFormatted = addedModified.join(',');
-                        break;
-                    case 'json':
-                        allFormatted = JSON.stringify(all);
-                        addedFormatted = JSON.stringify(added);
-                        modifiedFormatted = JSON.stringify(modified);
-                        removedFormatted = JSON.stringify(removed);
-                        renamedFormatted = JSON.stringify(renamed);
-                        addedModifiedFormatted = JSON.stringify(addedModified);
-                        break;
-                }
+                const allFormatted = all.join(' ');
+                const addedFormatted = added.join(' ');
+                const modifiedFormatted = modified.join(' ');
+                const removedFormatted = removed.join(' ');
+                const renamedFormatted = renamed.join(' ');
+                const addedModifiedFormatted = addedModified.join(' ');
                 // Log the output values.
                 core.info(`All: ${allFormatted}`);
                 core.info(`Added: ${addedFormatted}`);
@@ -189,8 +150,6 @@ function run() {
                 core.setOutput('removed', removedFormatted);
                 core.setOutput('renamed', renamedFormatted);
                 core.setOutput('added_modified', addedModifiedFormatted);
-                // For backwards-compatibility
-                core.setOutput('deleted', removedFormatted);
             }
         }
         catch (error) {
