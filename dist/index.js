@@ -105,18 +105,13 @@ function run() {
             const addedModified = [];
             for (const file of files) {
                 const filename = file.filename;
-                const result = yield octokit.rest.repos.getContent({
-                    owner: github.context.repo.owner,
-                    repo: github.context.repo.repo,
-                    path: file.raw_url,
-                    mediaType: {
-                        format: 'raw'
-                    }
-                });
                 // eslint-disable-next-line no-console
-                console.log(filename);
-                // eslint-disable-next-line no-console
-                console.log(result);
+                console.log(file);
+                // const result = await octokit.rest.repos.getContent({
+                //   owner: github.context.repo.owner,
+                //   repo: github.context.repo.repo,
+                //   path: filename
+                // })
                 all.push(filename);
                 switch (file.status) {
                     case 'added':
