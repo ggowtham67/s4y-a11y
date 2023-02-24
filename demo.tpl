@@ -10,7 +10,7 @@
   <div class="container">
     <button>Button</button>
     <img src="demo.png"/>
-    <div>v0.0.5</div>
+    <div>v0.0.5 validate</div>
   </div>
 </body>
 </html>

@@ -104,9 +104,8 @@ async function run(): Promise<void> {
       validate(dom.document.body)
     }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
-    // eslint-disable-next-line no-console
-    else console.error(error)
+    if (error instanceof Error) core.setFailed(`Error thrown: ${error.message}`)
+    else core.setFailed(error as string)
   }
 }
 
