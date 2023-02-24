@@ -99,16 +99,18 @@ function run() {
             const files = (_e = response.data.files) !== null && _e !== void 0 ? _e : [];
             for (const file of files) {
                 const filename = file.filename;
-                const result = (yield octokit.rest.repos.getContent({
+                const result = yield octokit.rest.repos.getContent({
                     owner: github.context.repo.owner,
                     repo: github.context.repo.repo,
                     path: filename,
                     ref: base
-                }));
+                });
                 // eslint-disable-next-line no-console
                 console.log(filename);
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 // eslint-disable-next-line no-console
-                console.log(result.data.toString());
+                console.log(Buffer.from(result.data.content, 'base64'));
             }
         }
         catch (error) {

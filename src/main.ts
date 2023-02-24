@@ -1,9 +1,5 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {Endpoints} from '@octokit/types'
-
-type FileGetResponse =
-  Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['response']
 
 async function run(): Promise<void> {
   try {
@@ -83,17 +79,19 @@ async function run(): Promise<void> {
     for (const file of files) {
       const filename = file.filename
 
-      const result = (await octokit.rest.repos.getContent({
+      const result = await octokit.rest.repos.getContent({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         path: filename,
         ref: base
-      })) as FileGetResponse
+      })
 
       // eslint-disable-next-line no-console
       console.log(filename)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       // eslint-disable-next-line no-console
-      console.log(result.data.toString())
+      console.log(Buffer.from(result.data.content, 'base64'))
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
