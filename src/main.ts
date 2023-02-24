@@ -79,7 +79,7 @@ async function run(): Promise<void> {
     // Get the changed files from the response payload.
     const files = response.data.files ?? []
 
-    const output: string[] = []
+    let output: string[] = ['# Accessibility validation']
 
     for (const file of files) {
       const filename = file.filename
@@ -110,7 +110,11 @@ async function run(): Promise<void> {
           return
         }
 
-        output.push(`### ${filename}: Violation(s)`)
+        if (results.violations.length < 1) {
+          output = [...output, 'No violations found.  ']
+        }
+
+        output = [...output, `## Violation(s) for: ${filename}  `]
 
         const violations = results.violations.map(v => {
           return [
@@ -128,10 +132,13 @@ async function run(): Promise<void> {
           ...violations
         ])
 
-        output.push(table)
-        output.push('  ')
+        output = [...output, table]
+        output = [...output, '  ']
       })
     }
+
+    core.debug(`output length: ${output.length.toString()}`)
+    core.debug(`output text: ${output.join(',')}`)
 
     if (output.length < 1) {
       core.info('No files to process')
