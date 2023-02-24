@@ -110,7 +110,7 @@ async function run(): Promise<void> {
       const validationResults = await validate(dom.document.body)
 
       if (validationResults.violations.length < 1) {
-        output = [...output, 'No violations found.  ']
+        output = [...output, '\n> No violations found.\n\n']
       }
 
       output = [...output, `## Violation(s) for: ${filename}  `]
@@ -121,29 +121,24 @@ async function run(): Promise<void> {
           v.description,
           v.help,
           v.helpUrl,
-          v.tags.join(','),
           v.nodes.map(n => n.element?.outerHTML).join(',')
         ]
       })
 
       const table = markdownTable([
-        ['Impact', 'Description', 'Help', 'Help URL', 'Tags', 'Elements'],
+        ['Impact', 'Description', 'Help', 'Help URL', 'Elements'],
         ...violations
       ])
 
-      output = [...output, table]
-      output = [...output, '  ']
+      output = [...output, '\n', table, '\n\n']
     }
-
-    core.info(`output length: ${output.length.toString()}`)
-    core.info(`output text: ${output.join(',')}`)
 
     if (output.length < 1) {
       core.info('No files to process')
       return
     }
 
-    const text = output.join('  ')
+    const text = output.join('\n\n')
 
     const prNo = github.context.payload.pull_request?.number
     if (eventName === 'pull_request' && prNo) {
