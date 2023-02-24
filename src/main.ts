@@ -145,24 +145,24 @@ async function run(): Promise<void> {
       return
     }
 
-    const text = output.join('  ')
+    // const text = output.join('  ')
 
-    const prNo = github.context.payload.pull_request?.number
-    if (eventName === 'pull_request' && prNo) {
-      await octokit.rest.issues.createComment({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: prNo,
-        body: text
-      })
-    } else if (eventName === 'push') {
-      await octokit.rest.repos.createCommitComment({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        commit_sha: github.context.sha,
-        body: text
-      })
-    }
+    // const prNo = github.context.payload.pull_request?.number
+    // if (eventName === 'pull_request' && prNo) {
+    //   await octokit.rest.issues.createComment({
+    //     owner: github.context.repo.owner,
+    //     repo: github.context.repo.repo,
+    //     issue_number: prNo,
+    //     body: text
+    //   })
+    // } else if (eventName === 'push') {
+    //   await octokit.rest.repos.createCommitComment({
+    //     owner: github.context.repo.owner,
+    //     repo: github.context.repo.repo,
+    //     commit_sha: github.context.sha,
+    //     body: text
+    //   })
+    // }
   } catch (error) {
     if (error instanceof Error)
       core.setFailed(
