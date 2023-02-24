@@ -12,7 +12,9 @@ async function run(): Promise<void> {
     const octokit = github.getOctokit(token)
 
     // Debug log the payload.
-    core.info(`Payload ${JSON.stringify(github.context.payload, undefined, 2)}`)
+    core.debug(
+      `Payload ${JSON.stringify(github.context.payload, undefined, 2)}`
+    )
 
     // Get event name.
     const eventName = github.context.eventName
@@ -38,8 +40,8 @@ async function run(): Promise<void> {
     }
 
     // Log the base and head commits
-    core.info(`Base commit: ${base}`)
-    core.info(`Head commit: ${head}`)
+    core.debug(`Base commit: ${base}`)
+    core.debug(`Head commit: ${head}`)
 
     // Ensure that the base and head properties are set on the payload.
     if (!(base && head)) {
@@ -85,7 +87,7 @@ async function run(): Promise<void> {
       return
     }
 
-    let output: string[] = ['# Accessibility validation']
+    let output: string[] = ['## Accessibility validation']
 
     for (const file of files) {
       const filename = file.filename
@@ -113,7 +115,7 @@ async function run(): Promise<void> {
         output = [...output, '\n> No violations found.\n\n']
       }
 
-      output = [...output, `## Violation(s) for: ${filename}  `]
+      output = [...output, `### [${filename}](${file.blob_url})`]
 
       const violations = validationResults.violations.map(v => {
         return [
@@ -121,7 +123,7 @@ async function run(): Promise<void> {
           v.description,
           v.help,
           v.helpUrl,
-          v.nodes.map(n => n.element?.outerHTML).join(',')
+          v.nodes.map(n => n.target.join(',')).join(',')
         ]
       })
 
@@ -133,16 +135,11 @@ async function run(): Promise<void> {
       output = [...output, '\n', table, '\n\n']
     }
 
-    if (output.length < 1) {
-      core.info('No files to process')
-      return
-    }
-
     const text = output.join('\n\n')
 
     const prNo = github.context.payload.pull_request?.number
     if (eventName === 'pull_request' && prNo) {
-      core.info(`Publish PR comment, ${prNo}`)
+      core.debug(`Publish PR comment, ${prNo}`)
       await octokit.rest.issues.createComment({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -150,7 +147,7 @@ async function run(): Promise<void> {
         body: text
       })
     } else if (eventName === 'push') {
-      core.info(`Publish commit comment, ${github.context.sha}`)
+      core.debug(`Publish commit comment, ${github.context.sha}`)
       await octokit.rest.repos.createCommitComment({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,

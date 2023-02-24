@@ -9,7 +9,7 @@
 <body>
   <div class="container">
     <button>Button</button>
-    <img src="demo1.png"/>
+    <img src="{$smarty.const.STATIC_URL}/demo1.png"/>
     <img src="demo2.png"/>
     <div>v0.0.5 validate</div>
     <div>{{$v}}</div>
