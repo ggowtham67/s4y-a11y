@@ -164,8 +164,11 @@ async function run(): Promise<void> {
       })
     }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(`Error thrown: ${error.message}`)
-    else core.setFailed(error as string)
+    if (error instanceof Error)
+      core.setFailed(
+        `Error thrown: ${error.message}, ${error.stack}, ${error.name}`
+      )
+    else core.setFailed((error as string).toString())
   }
 }
 
