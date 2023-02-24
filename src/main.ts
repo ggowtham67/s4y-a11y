@@ -1,5 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import validate from './axe'
+import {getDOM} from './dom'
 
 async function run(): Promise<void> {
   try {
@@ -17,8 +19,8 @@ async function run(): Promise<void> {
     const eventName = github.context.eventName
 
     // Define the base and head commits to be extracted from the payload.
-    let base: string | undefined
-    let head: string | undefined
+    let base = ''
+    let head = ''
 
     switch (eventName) {
       case 'pull_request':
@@ -33,6 +35,7 @@ async function run(): Promise<void> {
         core.setFailed(
           `This action only supports pull requests and pushes, ${github.context.eventName} events are not supported. Please submit an issue on this action's GitHub repo if you believe this in correct.`
         )
+        return
     }
 
     // Log the base and head commits
@@ -44,10 +47,7 @@ async function run(): Promise<void> {
       core.setFailed(
         `The base and head commits are missing from the payload for this ${github.context.eventName} event. Please submit an issue on this action's GitHub repo.`
       )
-
-      // To satisfy TypeScript, even though this is unreachable.
-      base = ''
-      head = ''
+      return
     }
 
     // Use GitHub's compare two commits API.
@@ -64,6 +64,7 @@ async function run(): Promise<void> {
       core.setFailed(
         `The GitHub API for comparing the base and head commits for this ${github.context.eventName} event returned ${response.status}, expected 200. Please submit an issue on this action's GitHub repo.`
       )
+      return
     }
 
     // Ensure that the head commit is ahead of the base commit.
@@ -71,6 +72,7 @@ async function run(): Promise<void> {
       core.setFailed(
         `The head commit for this ${github.context.eventName} event is not ahead of the base commit. Please submit an issue on this action's GitHub repo.`
       )
+      return
     }
 
     // Get the changed files from the response payload.
@@ -78,6 +80,10 @@ async function run(): Promise<void> {
 
     for (const file of files) {
       const filename = file.filename
+      // Process only the tpl files
+      if (!filename.endsWith('.tpl')) continue
+
+      core.info(`Processing template ${filename}`)
 
       const result = await octokit.rest.repos.getContent({
         owner: github.context.repo.owner,
@@ -86,12 +92,16 @@ async function run(): Promise<void> {
         ref: base
       })
 
-      // eslint-disable-next-line no-console
-      console.log(filename)
+      // TODO: figure out ts def
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      // eslint-disable-next-line no-console
-      console.log(Buffer.from(result.data.content, 'base64').toString())
+      const contents = Buffer.from(result.data.content, 'base64').toString()
+
+      // build dom
+      const dom = getDOM(contents)
+
+      // validate
+      validate(dom.document.body)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
