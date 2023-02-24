@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import {markdownTable} from 'markdown-table'
 import validate from './axe'
 import {getDOM} from './dom'
 
@@ -78,6 +79,8 @@ async function run(): Promise<void> {
     // Get the changed files from the response payload.
     const files = response.data.files ?? []
 
+    const output: string[] = []
+
     for (const file of files) {
       const filename = file.filename
       // Process only the tpl files
@@ -107,11 +110,50 @@ async function run(): Promise<void> {
           return
         }
 
-        for (const violation of results.violations) {
-          core.info(
-            `${violation.impact} violation found: ${violation.description}`
-          )
-        }
+        output.push(`### ${filename}: Violation(s)`)
+
+        const violations = results.violations.map(v => {
+          return [
+            v.impact,
+            v.description,
+            v.help,
+            v.helpUrl,
+            v.tags.join('  '),
+            v.nodes.map(n => n.element?.outerHTML).join('  ')
+          ]
+        })
+
+        const table = markdownTable([
+          ['Impact', 'Description', 'Help', 'Help URL', 'Tags', 'Elements'],
+          ...violations
+        ])
+
+        output.push(table)
+        output.push('  ')
+      })
+    }
+
+    if (output.length < 1) {
+      core.info('No files to process')
+      return
+    }
+
+    const text = output.join('  ')
+
+    const prNo = github.context.payload.pull_request?.number
+    if (eventName === 'pull_request' && prNo) {
+      await octokit.rest.issues.createComment({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNo,
+        body: text
+      })
+    } else if (eventName === 'push') {
+      await octokit.rest.repos.createCommitComment({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: github.context.sha,
+        body: text
       })
     }
   } catch (error) {
