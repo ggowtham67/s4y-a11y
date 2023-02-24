@@ -13,7 +13,7 @@
     <div>v0.0.5 validate</div>
     <div>{{$v}}</div>
     {foreach from=$collection item=item key=key name=name}
-      <a>anchor changed 7</a>
+      <a>anchor changed 8</a>
     {/foreach}
   </div>
 </body>
