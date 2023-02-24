@@ -101,40 +101,35 @@ async function run(): Promise<void> {
       const contents = Buffer.from(result.data.content, 'base64').toString()
 
       // build dom
-      const dom = getDOM(contents)
+      const dom = await getDOM(contents)
 
       // validate
-      validate(dom.document.body, function (error, results) {
-        if (error != null) {
-          core.error(`Error while validating ${filename}, error: ${error}`)
-          return
-        }
+      const validationResults = await validate(dom.document.body)
 
-        if (results.violations.length < 1) {
-          output = [...output, 'No violations found.  ']
-        }
+      if (validationResults.violations.length < 1) {
+        output = [...output, 'No violations found.  ']
+      }
 
-        output = [...output, `## Violation(s) for: ${filename}  `]
+      output = [...output, `## Violation(s) for: ${filename}  `]
 
-        const violations = results.violations.map(v => {
-          return [
-            v.impact,
-            v.description,
-            v.help,
-            v.helpUrl,
-            v.tags.join('  '),
-            v.nodes.map(n => n.element?.outerHTML).join('  ')
-          ]
-        })
-
-        const table = markdownTable([
-          ['Impact', 'Description', 'Help', 'Help URL', 'Tags', 'Elements'],
-          ...violations
-        ])
-
-        output = [...output, table]
-        output = [...output, '  ']
+      const violations = validationResults.violations.map(v => {
+        return [
+          v.impact,
+          v.description,
+          v.help,
+          v.helpUrl,
+          v.tags.join('  '),
+          v.nodes.map(n => n.element?.outerHTML).join('  ')
+        ]
       })
+
+      const table = markdownTable([
+        ['Impact', 'Description', 'Help', 'Help URL', 'Tags', 'Elements'],
+        ...violations
+      ])
+
+      output = [...output, table]
+      output = [...output, '  ']
     }
 
     core.info(`output length: ${output.length.toString()}`)

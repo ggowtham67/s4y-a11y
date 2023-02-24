@@ -1,6 +1,8 @@
 import {DOMWindow, JSDOM} from 'jsdom'
 
-export const getDOM = (html: string): DOMWindow => {
-  const {window} = new JSDOM(html)
-  return window
+export const getDOM = async (html: string): Promise<DOMWindow> => {
+  return new Promise(resolve => {
+    const {window} = new JSDOM(html)
+    resolve(window)
+  })
 }

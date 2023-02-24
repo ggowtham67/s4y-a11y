@@ -11,9 +11,14 @@ const getAxeConfig = (): Spec => {
   }
 }
 
-const validate = (dom: Node, cb: RunCallback): void => {
-  axe.configure(getAxeConfig())
-  axe.run(dom, cb)
+const validate = async (dom: Node): Promise<axe.AxeResults> => {
+  return new Promise((resolve, reject) => {
+    axe.configure(getAxeConfig())
+    axe.run(dom, (e, r) => {
+      if (!e) resolve(r)
+      reject(e)
+    })
+  })
 }
 
 export default validate
