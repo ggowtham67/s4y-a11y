@@ -87,14 +87,21 @@ async function run(): Promise<void> {
     for (const file of files) {
       const filename = file.filename
 
-      // eslint-disable-next-line no-console
-      console.log(file)
+      const requestOptions = octokit.rest.repos.getContent.endpoint({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        path: file.contents_url,
+        mediaType: {
+          format: 'raw'
+        }
+      })
 
-      // const result = await octokit.rest.repos.getContent({
-      //   owner: github.context.repo.owner,
-      //   repo: github.context.repo.repo,
-      //   path: filename
-      // })
+      const result = await octokit.request(requestOptions)
+
+      // eslint-disable-next-line no-console
+      console.log(filename)
+      // eslint-disable-next-line no-console
+      console.log(result)
 
       all.push(filename)
 
