@@ -3,7 +3,6 @@ import * as github from '@actions/github'
 
 import {context} from '@actions/github'
 
-type Format = 'space-delimited' | 'csv' | 'json'
 type FileStatus = 'added' | 'modified' | 'removed' | 'renamed'
 
 async function run(): Promise<void> {
@@ -14,15 +13,6 @@ async function run(): Promise<void> {
     })
 
     const octokit = github.getOctokit(token)
-
-    const format = core.getInput('format', {required: true}) as Format
-
-    // Ensure that the format parameter is set properly.
-    if (format !== 'space-delimited' && format !== 'csv' && format !== 'json') {
-      core.setFailed(
-        `Format must be one of 'string-delimited', 'csv', or 'json', got '${format}'.`
-      )
-    }
 
     // Debug log the payload.
     core.debug(`Payload keys: ${Object.keys(context.payload)}`)
@@ -99,13 +89,6 @@ async function run(): Promise<void> {
     if (files) {
       for (const file of files) {
         const filename = file.filename
-        // If we're using the 'space-delimited' format and any of the filenames have a space in them,
-        // then fail the step.
-        if (format === 'space-delimited' && filename.includes(' ')) {
-          core.setFailed(
-            `One of your files includes a space. Consider using a different output format or removing spaces from your filenames. Please submit an issue on this action's GitHub repo.`
-          )
-        }
         all.push(filename)
         switch (file.status as FileStatus) {
           case 'added':
@@ -129,46 +112,12 @@ async function run(): Promise<void> {
         }
       }
 
-      // Format the arrays of changed files.
-      let allFormatted: string
-      let addedFormatted: string
-      let modifiedFormatted: string
-      let removedFormatted: string
-      let renamedFormatted: string
-      let addedModifiedFormatted: string
-      switch (format) {
-        case 'space-delimited':
-          // If any of the filenames have a space in them, then fail the step.
-          for (const file of all) {
-            if (file.includes(' '))
-              core.setFailed(
-                'One of your files includes a space. Consider using a different output format or removing spaces from your filenames.'
-              )
-          }
-          allFormatted = all.join(' ')
-          addedFormatted = added.join(' ')
-          modifiedFormatted = modified.join(' ')
-          removedFormatted = removed.join(' ')
-          renamedFormatted = renamed.join(' ')
-          addedModifiedFormatted = addedModified.join(' ')
-          break
-        case 'csv':
-          allFormatted = all.join(',')
-          addedFormatted = added.join(',')
-          modifiedFormatted = modified.join(',')
-          removedFormatted = removed.join(',')
-          renamedFormatted = renamed.join(',')
-          addedModifiedFormatted = addedModified.join(',')
-          break
-        case 'json':
-          allFormatted = JSON.stringify(all)
-          addedFormatted = JSON.stringify(added)
-          modifiedFormatted = JSON.stringify(modified)
-          removedFormatted = JSON.stringify(removed)
-          renamedFormatted = JSON.stringify(renamed)
-          addedModifiedFormatted = JSON.stringify(addedModified)
-          break
-      }
+      const allFormatted = all.join(' ')
+      const addedFormatted = added.join(' ')
+      const modifiedFormatted = modified.join(' ')
+      const removedFormatted = removed.join(' ')
+      const renamedFormatted = renamed.join(' ')
+      const addedModifiedFormatted = addedModified.join(' ')
 
       // Log the output values.
       core.info(`All: ${allFormatted}`)
@@ -185,9 +134,6 @@ async function run(): Promise<void> {
       core.setOutput('removed', removedFormatted)
       core.setOutput('renamed', renamedFormatted)
       core.setOutput('added_modified', addedModifiedFormatted)
-
-      // For backwards-compatibility
-      core.setOutput('deleted', removedFormatted)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
