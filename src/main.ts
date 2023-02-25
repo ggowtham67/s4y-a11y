@@ -4,6 +4,8 @@ import {markdownTable} from 'markdown-table'
 import validate from './axe'
 import {getDOM} from './dom'
 
+const ALLOWED_FILE_STATUS = ['added', 'modified', 'renamed']
+
 async function run(): Promise<void> {
   try {
     // Create GitHub client with the API token.
@@ -78,8 +80,8 @@ async function run(): Promise<void> {
 
     // Get the changed files from the response payload.
     // Process only the tpl files
-    const files = (response.data.files ?? []).filter(f =>
-      f.filename.endsWith('.tpl')
+    const files = (response.data.files ?? []).filter(
+      f => ALLOWED_FILE_STATUS.includes(f.status) && f.filename.endsWith('.tpl')
     )
 
     if (files.length < 1) {
@@ -97,7 +99,7 @@ async function run(): Promise<void> {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         path: filename,
-        ref: base
+        ref: head
       })
 
       // TODO: figure out ts def

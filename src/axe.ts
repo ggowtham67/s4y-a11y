@@ -1,19 +1,9 @@
-import axe, {Spec} from 'axe-core'
-
-const getAxeConfig = (): Spec => {
-  return {
-    rules: [
-      {
-        id: 'color-contrast',
-        enabled: false
-      }
-    ]
-  }
-}
+import axe from 'axe-core'
+import {AXE_CONFIG} from './const'
 
 const validate = async (dom: Node): Promise<axe.AxeResults> => {
   return new Promise((resolve, reject) => {
-    axe.configure(getAxeConfig())
+    axe.configure(AXE_CONFIG)
     axe.run(dom, (e, r) => {
       if (!e) resolve(r)
       reject(e)
