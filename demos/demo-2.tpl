@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <div class="container">
-    <img src="{$smarty.const.STATIC_URL}/demo1.png"/>
-  </div>
-</body>
-</html>
+<div class="hero-image-fig">
+  <button id="caption-info" name="Show image caption"></button>
+  <img src="https://static.adsafeprotected.com/skeleton.gif?adslot=frwjhs_728x90_" decoding="async"
+    style="width: 90px !important; height: 728px !important;">
+</div>
