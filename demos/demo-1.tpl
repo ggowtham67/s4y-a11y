@@ -11,10 +11,9 @@
     <button>Button</button>
     <img src="{$smarty.const.STATIC_URL}/demo1.png"/>
     <img src="demo2.png"/>
-    <div>v0.0.5 validate</div>
     <div>{{$v}}</div>
     {foreach from=$collection item=item key=key name=name}
-      <a>anchor changed 11</a>
+      <a>anchor changed 12</a>
     {/foreach}
   </div>
 </body>

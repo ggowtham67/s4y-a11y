@@ -132,7 +132,7 @@ async function run(): Promise<void> {
           v.help,
           v.helpUrl,
           v.nodes.map(n => n.target.join(', ')).join(', '),
-          v.nodes.map(n => n.html).join(', ')
+          v.nodes.map(n => `\`${n.html}\``).join(', ')
         ]
       })
 
