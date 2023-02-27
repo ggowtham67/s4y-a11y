@@ -110,8 +110,13 @@ async function run(): Promise<void> {
       // build dom
       const dom = await getDOM(contents)
 
+      // scan full html if enclosed with html tag else scan only the body
+      const rootEle = contents.includes('</html>')
+        ? dom.document.documentElement
+        : dom.document.body
+
       // validate
-      const validationResults = await validate(dom.document.body)
+      const validationResults = await validate(rootEle)
 
       if (validationResults.violations.length < 1) {
         output = [...output, '\n> No violations found.\n\n']

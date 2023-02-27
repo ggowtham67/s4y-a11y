@@ -14,7 +14,7 @@
     <div>v0.0.5 validate</div>
     <div>{{$v}}</div>
     {foreach from=$collection item=item key=key name=name}
-      <a>anchor changed 9</a>
+      <a>anchor changed 10</a>
     {/foreach}
   </div>
 </body>
