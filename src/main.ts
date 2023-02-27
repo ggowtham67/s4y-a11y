@@ -5,6 +5,7 @@ import validate from './axe'
 import {getDOM} from './dom'
 
 const ALLOWED_FILE_STATUS = ['added', 'modified', 'renamed']
+const THEAD = ['Impact', 'Description', 'Help', 'Help URL', 'Elements', 'HTML']
 
 async function run(): Promise<void> {
   try {
@@ -130,14 +131,12 @@ async function run(): Promise<void> {
           v.description,
           v.help,
           v.helpUrl,
-          v.nodes.map(n => n.target.join(', ')).join(', ')
+          v.nodes.map(n => n.target.join(', ')).join(', '),
+          v.nodes.map(n => n.html).join(', ')
         ]
       })
 
-      const table = markdownTable([
-        ['Impact', 'Description', 'Help', 'Help URL', 'Elements'],
-        ...violations
-      ])
+      const table = markdownTable([[...THEAD], ...violations])
 
       output = [...output, '\n', table, '\n\n']
     }
