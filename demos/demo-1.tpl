@@ -13,7 +13,7 @@
     <img src="demo2.png"/>
     <div>{{$v}}</div>
     {foreach from=$collection item=item key=key name=name}
-      <a>anchor changed 12</a>
+      <a>anchor changed 13</a>
     {/foreach}
   </div>
 </body>

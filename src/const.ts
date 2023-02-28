@@ -12,3 +12,13 @@ export const AXE_CONFIG: Spec = {
     }
   ]
 }
+
+export const ALLOWED_FILE_STATUS = ['added', 'modified', 'renamed']
+export const MD_THEAD = [
+  'Impact',
+  'Description',
+  'Help',
+  'Help URL',
+  'Elements',
+  'HTML'
+]
