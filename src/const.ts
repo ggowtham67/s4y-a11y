@@ -9,6 +9,14 @@ export const AXE_CONFIG: Spec = {
     {
       id: 'region',
       enabled: false
+    },
+    {
+      id: 'landmark-unique',
+      enabled: false
+    },
+    {
+      id: 'html-lang-valid',
+      enabled: false
     }
   ]
 }
